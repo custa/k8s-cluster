@@ -69,10 +69,6 @@ sed -i 's|^SELINUX=.*|SELINUX=disabled|' /etc/selinux/config
 swapoff -a
 sed -i '/swap/{ s|^|#| }' /etc/fstab
 
-bash /vagrant/provision/etcd.sh
-bash /vagrant/provision/flannel.sh
-bash /vagrant/provision/docker.sh
-
   SHELL
 
   # 根据节点的主机名和IP，生成 ETCD_INITIAL_CLUSTER
@@ -95,12 +91,24 @@ bash /vagrant/provision/docker.sh
 set -xe
 export PS4='+[$LINENO]'
 
-bash /vagrant/provision/etcd_config.sh "$1" "$2" "$3"
-
+bash /vagrant/provision/etcd.sh
+bash /vagrant/provision/etcd_config.sh "$2" "$3" "$4"
+bash /vagrant/provision/flannel.sh
+bash /vagrant/provision/docker.sh
 systemctl start etcd flanneld docker &
 
+bash /vagrant/provision/kubernetes.sh
+bash /vagrant/provision/kubernetes_node.sh
+systemctl start kube-proxy kubelet &
+
+if [[ "$1" == "1" ]]; then
+  bash /vagrant/provision/kubernetes_client.sh
+  bash /vagrant/provision/kubernetes_master.sh
+  systemctl start kube-apiserver kube-controller-manager kube-scheduler &
+fi
+
         SHELL
-        s.args = [vm_name, ip, ETCD_INITIAL_CLUSTER]    # 脚本中使用 $1, $2, $3... 读取
+        s.args = [i, vm_name, ip, ETCD_INITIAL_CLUSTER]    # 脚本中使用 $1, $2, $3... 读取
       end
     end
   end

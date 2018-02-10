@@ -1,2 +1,45 @@
 # kubernetes-cluster
 使用 Vagrant 配置 Kubernetes 多节点集群
+
+集群由 1 个 master 和 3 个 node 组成（ master 与第 1 个 node 运行在同一节点 ）。
+etcd、flannel 和 docker-ce 使用 yum 包直接安装，etcd 由 3 个实例组成的静态集群。
+Kubernetes 使用二进制包进行安装，各个组件的进程使用 systemd 进行管理（ unit 文件等相关配置参照 kubernetes-1.5.2 yum 安装包 ）。
+
+### 环境信息：
+- macOS High Sierra
+- Virtualbox 5.2.6 r120293
+- Vagrant 2.0.2
+- centos/7 1801.02
+
+### 相关软件版本
+- etcd 3.2.11
+- flannel 0.7.1
+- docker-ce 17.12.0-ce
+- Kubernetes 1.9.2
+
+### 使用步骤：
+- 下载 Kubernetes 二进制包放到当前目录
+
+[kubernetes-client-linux-amd64.tar.gz](https://dl.k8s.io/v1.9.2/kubernetes-client-linux-amd64.tar.gz)
+
+[kubernetes-server-linux-amd64.tar.gz](https://dl.k8s.io/v1.9.2/kubernetes-server-linux-amd64.tar.gz)
+
+- 启动虚拟机
+
+> 第一次启动过程需要执行软件安装，时间比较长，可能需要翻墙才能下载相关安装包
+
+```
+vagrant up
+```
+
+- 登陆 node-01
+
+```
+vagrant ssh node-01
+```
+
+- 使用 kubectl 操作 Kubernetes 集群
+
+```
+kubectl get node
+```
