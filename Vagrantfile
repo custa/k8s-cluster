@@ -35,14 +35,14 @@ Vagrant.configure("2") do |config|
   end
 
   # 设置代理
-  #config.proxy.http     = "http://10.0.2.2:8080"
-  #config.proxy.https    = "http://10.0.2.2:8080"
+  config.proxy.http     = "http://10.0.2.2:8080"
+  config.proxy.https    = "http://10.0.2.2:8080"
   #config.proxy.no_proxy = "localhost,127.0.0.1,.example.com"
 
   # http://tmatilai.github.io/vagrant-proxyconf/
   # 代理配置会重启 Docker 服务，但其依赖的服务并未启动导致失败
   # 去掉对 Docker 执行配置，需要时在 config.vm.provision 修改 /etc/sysconfig/docker 
-  #config.proxy.enabled = { docker: false }
+  config.proxy.enabled = { docker: false }
 
   config.vm.provision "shell", inline: <<-SHELL
 set -xe
@@ -58,6 +58,29 @@ source /etc/profile.d/zzz_no_proxy.sh &>/dev/null
 
 # 可能需要配置 Proxy 的 CA 证书
 cat >>/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem <<\EOF
+-----BEGIN CERTIFICATE-----
+MIID2TCCAsGgAwIBAgIJALQPO9XxFFZmMA0GCSqGSIb3DQEBCwUAMIGCMQswCQYD
+VQQGEwJjbjESMBAGA1UECAwJR3VhbmdEb25nMREwDwYDVQQHDAhTaGVuemhlbjEP
+MA0GA1UECgwGSHVhd2VpMQswCQYDVQQLDAJJVDEuMCwGA1UEAwwlSHVhd2VpIFdl
+YiBTZWN1cmUgSW50ZXJuZXQgR2F0ZXdheSBDQTAeFw0xNjA1MTAwOTAyMjdaFw0y
+NjA1MDgwOTAyMjdaMIGCMQswCQYDVQQGEwJjbjESMBAGA1UECAwJR3VhbmdEb25n
+MREwDwYDVQQHDAhTaGVuemhlbjEPMA0GA1UECgwGSHVhd2VpMQswCQYDVQQLDAJJ
+VDEuMCwGA1UEAwwlSHVhd2VpIFdlYiBTZWN1cmUgSW50ZXJuZXQgR2F0ZXdheSBD
+QTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANk9kMn2ivB+6Lp23PIX
+OaQ3Z7YfXvBH5HfecFOo18b9jC1DhZ3v5URScjzkg8bb616WS00E9oVyvcaGXuL4
+Q0ztCwOszF0YwcQlnoLBpAqq6v5kJgXLvGfjx+FKVjFcHVVlVJeJviPgGm4/2FLh
+odoreBqPRAfLRuSJ5U+VvgYipKMswTXh7fAK/2LkTf1dpWNvRsoXVm692uFkGuNx
+dCdUHYCI5rl6TqMXht/ZINiclroQLkd0gJKhDVmnygEjwAJMMiJ5Z+Tltc6WZoMD
+lrjETdpkY6e/qPhzutxDJv5XH9nXN33Eu9VgE1fVEFUGequcFXX7LXSHE1lzFeae
+rG0CAwEAAaNQME4wHQYDVR0OBBYEFDB6DZZX4Am+isCoa48e4ZdrAXpsMB8GA1Ud
+IwQYMBaAFDB6DZZX4Am+isCoa48e4ZdrAXpsMAwGA1UdEwQFMAMBAf8wDQYJKoZI
+hvcNAQELBQADggEBAKN9kSjRX56yw2Ku5Mm3gZu/kQQw+mLkIuJEeDwS6LWjW0Hv
+3l3xlv/Uxw4hQmo6OXqQ2OM4dfIJoVYKqiLlBCpXvO/X600rq3UPediEMaXkmM+F
+tuJnoPCXmew7QvvQQvwis+0xmhpRPg0N6xIK01vIbAV69TkpwJW3dujlFuRJgSvn
+rRab4gVi14x+bUgTb6HCvDH99PhADvXOuI1mk6Kb/JhCNbhRAHezyfLrvimxI0Ky
+2KZWitN+M1UWvSYG8jmtDm+/FuA93V1yErRjKj92egCgMlu67lliddt7zzzzqW+U
+QLU0ewUmUHQsV5mk62v1e8sRViHBlB2HJ3DU5gE=
+-----END CERTIFICATE-----
 
 EOF
 
@@ -101,11 +124,9 @@ bash /vagrant/provision/kubernetes.sh
 bash /vagrant/provision/kubernetes_node.sh
 systemctl start kube-proxy kubelet &
 
-if [[ "$1" == "1" ]]; then
-  bash /vagrant/provision/kubernetes_client.sh
-  bash /vagrant/provision/kubernetes_master.sh
-  systemctl start kube-apiserver kube-controller-manager kube-scheduler &
-fi
+bash /vagrant/provision/kubernetes_client.sh
+bash /vagrant/provision/kubernetes_master.sh
+systemctl start kube-apiserver kube-controller-manager kube-scheduler &
 
         SHELL
         s.args = [i, vm_name, ip, ETCD_INITIAL_CLUSTER]    # 脚本中使用 $1, $2, $3... 读取

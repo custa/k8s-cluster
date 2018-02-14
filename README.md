@@ -1,8 +1,9 @@
 # kubernetes-cluster
 使用 Vagrant 配置 Kubernetes 多节点集群
 
-集群由 1 个 master 和 3 个 node 组成（ master 与第 1 个 node 运行在同一节点 ）。
+集群由 3 个 master 和 3 个 node 组成。
 etcd、flannel 和 docker-ce 使用 yum 包直接安装，etcd 由 3 个实例组成的静态集群。
+3 个 kube-apiserver 实例通过连接 etcd 集群构成集群，kubelet、kube-proxy、kube-controller-manager、kube-scheduler 4 个组件连接本节点上的 kube-apiserver（当前未配置负载均衡器，后续直接连接到负载均衡器上）。kubectl 连接本地的 kube-apiserver 访问整个集群。
 Kubernetes 使用二进制包进行安装，各个组件的进程使用 systemd 进行管理（ unit 文件等相关配置参照 kubernetes-1.5.2 yum 安装包 ）。
 
 ### 环境信息：
